@@ -2,20 +2,23 @@ import jwt from 'jsonwebtoken'
 import { prismaClient } from '../model/PrismaClient.js'
 import bcrypt from 'bcrypt';
 import { body } from 'express-validator'
+import { logger } from '../routes/Logger.js';
 
 const TOKEN_KEY = process.env.TOKEN_KEY;
 
 export class AuthController {
-    auth = (req, res, next) => {
+    auth = async (req, res, next) => {
         const token =
             req.body.token || req.query.token || req.headers["x-access-token"];
 
         if (!token) {
+            logger.error("[AUTH]", "A token is required for authentication")
             return res.status(403).send("A token is required for authentication");
         }
         try {
             req.payload = jwt.verify(token, TOKEN_KEY || "NO_TOKEN");
         } catch (err) {
+            logger.error("[AUTH]", "Invalid Token")
             return res.status(401).send("Invalid Token");
         }
         return next();
@@ -103,7 +106,7 @@ export class AuthController {
                 });
 
                 res.status(200).json({
-                    name: user.name,
+                    name: updatedUser.name,
                     token: token
                 });
                 return;

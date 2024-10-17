@@ -4,6 +4,7 @@ import { registrationController } from '../controllers/RegistrationController.js
 import { authController } from '../controllers/AuthController.js';
 import { validationResult } from 'express-validator'
 import { logger } from './Logger.js';
+import { testController } from '../controllers/TestController.js';
 
 
 const validate = validations => {
@@ -50,9 +51,6 @@ router.validatableGet = (path, controllerHandler) => {
     })
 }
 
-const jwtMiddleware = authController.auth;
-
-
 router.use(async (req, res, next) => {
   logger.info("[RECEIVE REQUEST]", { API: req.originalUrl });
   return next();
@@ -67,5 +65,7 @@ router.validatablePost('/registration/create', registrationController.createRegi
 
 router.validatablePost('/user/register', authController.register)
 router.validatablePost('/user/login', authController.login)
+
+router.get('/test', (req, res, next) => authController.auth(req, res, next), testController.tokenPing.handler)
 
 export { router }
